@@ -101,7 +101,7 @@ class MyCyclicBehaviour extends CyclicBehaviour {
 				myAgent.requests.put(msgId, withResponse);
 
 				myAgent.displayResponse("%s received".formatted(msgId));
-				myAgent.displayHtmlResponse(content);
+				myAgent.displayHtmlResponse(request.content() + "   " + content);
 			}
 		}
 	}
