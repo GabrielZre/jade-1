@@ -10,25 +10,19 @@ import java.io.*;
 
 public class ServiceAgent extends Agent {
 
-	protected void registerDictionary(DFAgentDescription dfAgentDescription, String dictName) {
-		ServiceDescription sd = new ServiceDescription();
-		sd.setType("answers");
-		sd.setName(dictName);
-
-		dfAgentDescription.addServices(sd);
-	}
 
 	protected void setup () {
 		DFAgentDescription dfad = new DFAgentDescription();
 		dfad.setName(getAID());
 
-		registerDictionary(dfad, "wordnet");
-		registerDictionary(dfad, "english");
-		registerDictionary(dfad, "trans");
-		registerDictionary(dfad, "fd-eng-pol");
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("answers");
+		sd.setName("dictionary");
+
+		dfad.addServices(sd);
 
 		try {
-			DFService.register(this,dfad);
+			DFService.register(this, dfad);
 		} catch (FIPAException ex) {
 			ex.printStackTrace();
 		}
