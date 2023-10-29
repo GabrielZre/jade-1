@@ -53,7 +53,7 @@ class MyCyclicBehaviour extends CyclicBehaviour {
 				//I cannot answer but I will search for someone who can
 				DFAgentDescription dfad = new DFAgentDescription();
 				ServiceDescription sd = new ServiceDescription();
-				sd.setName(ontology);
+				sd.setName("dictionary");
 				dfad.addServices(sd);
 				try
 				{
