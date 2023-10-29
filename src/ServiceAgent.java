@@ -9,36 +9,31 @@ import java.net.*;
 import java.io.*;
 
 public class ServiceAgent extends Agent {
+
+	protected void registerDictionary(DFAgentDescription dfAgentDescription, String dictName) {
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("answers");
+		sd.setName(dictName);
+
+		dfAgentDescription.addServices(sd);
+	}
+
 	protected void setup () {
-		//services registration at DF
 		DFAgentDescription dfad = new DFAgentDescription();
 		dfad.setName(getAID());
-		//service no 1
-		ServiceDescription sd1 = new ServiceDescription();
-		sd1.setType("answers");
-		sd1.setName("wordnet");
-		//service no 2
-		ServiceDescription sd2 = new ServiceDescription();
-		sd2.setType("answers");
-		sd2.setName("dictionary");
-		//service no 3
-		ServiceDescription sd3 = new ServiceDescription();
-		sd3.setType("answers");
-		sd3.setName("trans");
-		//add them all
-		dfad.addServices(sd1);
-		dfad.addServices(sd2);
-		dfad.addServices(sd3);
+
+		registerDictionary(dfad, "wordnet");
+		registerDictionary(dfad, "english");
+		registerDictionary(dfad, "trans");
+		registerDictionary(dfad, "fd-eng-pol");
+
 		try {
 			DFService.register(this,dfad);
 		} catch (FIPAException ex) {
 			ex.printStackTrace();
 		}
 		
-		addBehaviour(new WordnetCyclicBehaviour(this));
 		addBehaviour(new DictionaryCyclicBehaviour(this));
-		addBehaviour(new TransCyclicBehaviour(this));
-		//doDelete();
 	}
 	protected void takeDown() {
 		//services deregistration before termination
@@ -87,76 +82,6 @@ public class ServiceAgent extends Agent {
 	}
 }
 
-class TransCyclicBehaviour extends CyclicBehaviour
-{
-
-	ServiceAgent agent;
-	public TransCyclicBehaviour(ServiceAgent agent) {
-		this.agent = agent;
-	}
-
-	@Override
-	public void action() {
-		MessageTemplate template = MessageTemplate.MatchOntology("trans");
-		ACLMessage message = agent.receive(template);
-		if (message == null) {
-			block();
-		} else {
-			//process the incoming message
-			String content = message.getContent();
-			ACLMessage reply = message.createReply();
-			reply.setPerformative(ACLMessage.INFORM);
-			String response = "";
-			try
-			{
-				response = agent.makeRequest("trans",content);
-			}
-			catch (NumberFormatException ex)
-			{
-				response = ex.getMessage();
-			}
-			reply.setContent(response);
-			agent.send(reply);
-		}
-	}
-}
-
-class WordnetCyclicBehaviour extends CyclicBehaviour
-{
-	ServiceAgent agent;
-	public WordnetCyclicBehaviour(ServiceAgent agent)
-	{
-		this.agent = agent;
-	}
-	public void action()
-	{
-		MessageTemplate template = MessageTemplate.MatchOntology("wordnet");
-		ACLMessage message = agent.receive(template);
-		if (message == null)
-		{
-			block();
-		}
-		else
-		{
-			//process the incoming message
-			String content = message.getContent();
-			ACLMessage reply = message.createReply();
-			reply.setPerformative(ACLMessage.INFORM);
-			String response = "";
-			try
-			{
-				response = agent.makeRequest("wn",content);
-			}
-			catch (NumberFormatException ex)
-			{
-				response = ex.getMessage();
-			}
-			reply.setContent(response);
-			agent.send(reply);
-		}
-	}
-}
-
 class DictionaryCyclicBehaviour extends CyclicBehaviour
 {
 	ServiceAgent agent;
@@ -166,7 +91,7 @@ class DictionaryCyclicBehaviour extends CyclicBehaviour
 	}
 	public void action()
 	{
-		MessageTemplate template = MessageTemplate.MatchOntology("dictionary");
+		MessageTemplate template = MessageTemplate.MatchAll();
 		ACLMessage message = agent.receive(template);
 		if (message == null)
 		{
@@ -181,7 +106,7 @@ class DictionaryCyclicBehaviour extends CyclicBehaviour
 			String response = "";
 			try
 			{
-				response = agent.makeRequest("english", content);
+				response = agent.makeRequest(message.getOntology(), content);
 			}
 			catch (NumberFormatException ex)
 			{
